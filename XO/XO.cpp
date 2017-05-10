@@ -9,117 +9,13 @@
 #define BUTTONS IDC_BUTTON1 || IDC_BUTTON2 || IDC_BUTTON3 || IDC_BUTTON4 || IDC_BUTTON5 || IDC_BUTTON6 || IDC_BUTTON7 || IDC_BUTTON8 || IDC_BUTTON9
 
 // Global Variables:
-class Turn {
-private:
-	LPCWSTR STATE = L"N"; // N - none, x - x player, O - o player
-	//wchar_t* bf;
-public: 
-	LPCWSTR makemove() 
-	{
-		
-		if (STATE == L"N") { 
-			STATE = L"X";
-			return STATE; }
-		if (STATE == L"X") { 
-			STATE = L"O";
-			return STATE; }
-		if (STATE == L"O") { 
-			STATE = L"X";
-			return STATE; }
-	}
-	LPCWSTR getSTATE() {
-		return STATE;
-	}
-	void resetGame()
-	{
-		STATE = L"N";
-	}
-
-};
-class Field {
-private:
-	//LPWSTR FIELD[3][3];
-	char FIELD[3][3];
-	int freeFields = 9;
-	LPCWSTR x_won = L"X's won!";
-	LPCWSTR o_won = L"O's won!";
-	LPCWSTR n_won = L"DRAW"; // in progress
-public:
-	void move(LPCWSTR sign,int x, int y) {
-		if (sign == L"X")
-			FIELD[x][y] = 'X';
-		if (sign == L"O")
-			FIELD[x][y] = 'O';
-		--freeFields;
-	}
-	LPCWSTR winState() {
-		if ((FIELD[0][0] == 'X' || FIELD[0][0] == 'O') && (FIELD[0][0] == FIELD[1][0] && FIELD[1][0] == FIELD[2][0]) ) {
-			if (FIELD[0][0] == 'X')
-				return x_won;
-			if (FIELD[0][0] == 'O')
-				return o_won;
-		}
-		if ((FIELD[0][1] == 'X' || FIELD[0][1] == 'O') && (FIELD[0][1] == FIELD[1][1] && FIELD[1][1] == FIELD[2][1])) {
-			if (FIELD[0][1] == 'X')
-				return x_won;
-			if (FIELD[0][1] == 'O')
-				return o_won;
-		}
-		if ((FIELD[0][2] == 'X' || FIELD[0][2] == 'O') && (FIELD[0][2] == FIELD[1][2] && FIELD[1][2] == FIELD[2][2])) {
-			if (FIELD[0][2] == 'X')
-				return x_won;
-			if (FIELD[0][2] == 'O')
-				return o_won;
-		}
-		if ((FIELD[0][0] == 'X' || FIELD[0][0] == 'O') && (FIELD[0][0] == FIELD[0][1] && FIELD[0][1] == FIELD[0][2])) {
-			if (FIELD[0][0] == 'X')
-				return x_won;
-			if (FIELD[0][0] == 'O')
-				return o_won;
-		}
-		if ((FIELD[1][0] == 'X' || FIELD[1][0] == 'O') && (FIELD[1][0] == FIELD[1][1] && FIELD[1][1] == FIELD[1][2])) {
-			if (FIELD[1][0] == 'X')
-				return x_won;
-			if (FIELD[1][0] == 'O')
-				return o_won;
-		}
-		if ((FIELD[2][0] == 'X' || FIELD[2][0] == 'O') && (FIELD[2][0] == FIELD[2][1] && FIELD[2][1] == FIELD[2][2])) {
-			if (FIELD[0][0] == 'X')
-				return x_won;
-			if (FIELD[0][0] == 'O')
-				return o_won;
-		}
-		if ((FIELD[0][0] == 'X' || FIELD[0][0] == 'O') && (FIELD[0][0] == FIELD[1][1] && FIELD[1][1] == FIELD[2][2])) {
-			if (FIELD[0][0] == 'X')
-				return x_won;
-			if (FIELD[0][0] == 'O')
-				return o_won;
-		}
-		if ((FIELD[0][2] == 'X' || FIELD[0][2] == 'O') && (FIELD[0][2] == FIELD[1][1] && FIELD[1][1] == FIELD[2][0])) {
-			if (FIELD[0][2] == 'X')
-				return x_won;
-			if (FIELD[0][2] == 'O')
-				return o_won;
-		}
-		if (freeFields == 0) return n_won;
-		return NULL;
-	}
-	void reset() {
-		freeFields = 9;
-		for (int i = 0; i < 3; ++i)
-			for (int j = 0; j < 3; ++j)
-				FIELD[i][j] = '\0';
-	}
-};
 
 
 HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
-Turn TGame;
-Field GameField;
-LPWSTR sign_f;
-LPTSTR s;
+Turn TGame;										// for changin x on o
+Field GameField;								// Gamefield itself
 
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -304,64 +200,108 @@ INT_PTR CALLBACK XO(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 			
 				SetWindowText((HWND)lParam, TGame.makemove());
 				GameField.move(TGame.getSTATE(), 0, 0);
-				if (GameField.winState() != NULL) MessageBox(hDlg, GameField.winState(), L"HEADER", MB_OK); // throwing null, game.maybe move is broken
+				if (GameField.winState() != NULL) {
+					MessageBox(hDlg, GameField.winState(), L"End of game", MB_OK); 
+					TGame.resetGame();
+					GameField.reset();
+					EndDialog(hDlg, LOWORD(wParam));
+				}
 				Button_Enable(GetDlgItem(hDlg, IDC_BUTTON1), FALSE); // to   disable pressing again
 			}
 			if (LOWORD(wParam) == IDC_BUTTON2)
 			{
 				SetWindowText((HWND)lParam, TGame.makemove());
 				GameField.move(TGame.getSTATE(), 1, 0);
-				if (GameField.winState() != NULL) MessageBox(hDlg, GameField.winState(), L"HEADER", MB_OK);
-				//MessageBox(hDlg, TGame.getSTATE(), L"HEADER", MB_OK);
+				if (GameField.winState() != NULL) {
+					MessageBox(hDlg, GameField.winState(), L"End of game", MB_OK);
+					TGame.resetGame();
+					GameField.reset();
+					EndDialog(hDlg, LOWORD(wParam));
+				}
 				Button_Enable(GetDlgItem(hDlg, IDC_BUTTON2), FALSE);
 			}
 			if (LOWORD(wParam) == IDC_BUTTON3)
 			{
 				SetWindowText((HWND)lParam, TGame.makemove());
 				GameField.move(TGame.getSTATE(), 2, 0);
-				if (GameField.winState() != NULL) MessageBox(hDlg, GameField.winState(), L"HEADER", MB_OK);
+				if (GameField.winState() != NULL) {
+					MessageBox(hDlg, GameField.winState(), L"End of game", MB_OK);
+					TGame.resetGame();
+					GameField.reset();
+					EndDialog(hDlg, LOWORD(wParam));
+				}
 				Button_Enable(GetDlgItem(hDlg, IDC_BUTTON3), FALSE);
 			}
 			if (LOWORD(wParam) == IDC_BUTTON4)
 			{
 				SetWindowText((HWND)lParam, TGame.makemove());
 				GameField.move(TGame.getSTATE(), 0, 1);
-				if (GameField.winState() != NULL) MessageBox(hDlg, GameField.winState(), L"HEADER", MB_OK);
+				if (GameField.winState() != NULL) {
+					MessageBox(hDlg, GameField.winState(), L"End of game", MB_OK);
+					TGame.resetGame();
+					GameField.reset();
+					EndDialog(hDlg, LOWORD(wParam));
+				}
 				Button_Enable(GetDlgItem(hDlg, IDC_BUTTON4), FALSE);
 			}
 			if (LOWORD(wParam) == IDC_BUTTON5)
 			{
 				SetWindowText((HWND)lParam, TGame.makemove());
 				GameField.move(TGame.getSTATE(), 1, 1);
-				if (GameField.winState() != NULL) MessageBox(hDlg, GameField.winState(), L"HEADER", MB_OK);
+				if (GameField.winState() != NULL) {
+					MessageBox(hDlg, GameField.winState(), L"End of game", MB_OK);
+					TGame.resetGame();
+					GameField.reset();
+					EndDialog(hDlg, LOWORD(wParam));
+				}
 				Button_Enable(GetDlgItem(hDlg, IDC_BUTTON5), FALSE);
 			}
 			if (LOWORD(wParam) == IDC_BUTTON6)
 			{
 				SetWindowText((HWND)lParam, TGame.makemove());
 				GameField.move(TGame.getSTATE(), 2, 1);
-				if (GameField.winState() != NULL) MessageBox(hDlg, GameField.winState(), L"HEADER", MB_OK);
+				if (GameField.winState() != NULL) {
+					MessageBox(hDlg, GameField.winState(), L"End of game", MB_OK);
+					TGame.resetGame();
+					GameField.reset();
+					EndDialog(hDlg, LOWORD(wParam));
+				}
 				Button_Enable(GetDlgItem(hDlg, IDC_BUTTON6), FALSE);
 			}
 			if (LOWORD(wParam) == IDC_BUTTON7)
 			{
 				SetWindowText((HWND)lParam, TGame.makemove());
 				GameField.move(TGame.getSTATE(), 0, 2);
-				if (GameField.winState() != NULL) MessageBox(hDlg, GameField.winState(), L"HEADER", MB_OK);
+				if (GameField.winState() != NULL) {
+					MessageBox(hDlg, GameField.winState(), L"End of game", MB_OK);
+					TGame.resetGame();
+					GameField.reset();
+					EndDialog(hDlg, LOWORD(wParam));
+				}
 				Button_Enable(GetDlgItem(hDlg, IDC_BUTTON7), FALSE);
 			}
 			if (LOWORD(wParam) == IDC_BUTTON8)
 			{
 				SetWindowText((HWND)lParam, TGame.makemove());
 				GameField.move(TGame.getSTATE(), 1, 2);
-				if (GameField.winState() != NULL) MessageBox(hDlg, GameField.winState(), L"HEADER", MB_OK);
+				if (GameField.winState() != NULL) {
+					MessageBox(hDlg, GameField.winState(), L"End of game", MB_OK);
+					TGame.resetGame();
+					GameField.reset();
+					EndDialog(hDlg, LOWORD(wParam));
+				}
 				Button_Enable(GetDlgItem(hDlg, IDC_BUTTON8), FALSE);
 			}
 			if (LOWORD(wParam) == IDC_BUTTON9)
 			{
 				SetWindowText((HWND)lParam, TGame.makemove());
 				GameField.move(TGame.getSTATE(), 2, 2);
-				if (GameField.winState() != NULL) MessageBox(hDlg, GameField.winState(), L"HEADER", MB_OK);
+				if (GameField.winState() != NULL) {
+					MessageBox(hDlg, GameField.winState(), L"End of game", MB_OK);
+					TGame.resetGame();
+					GameField.reset();
+					EndDialog(hDlg, LOWORD(wParam));
+				}
 				Button_Enable(GetDlgItem(hDlg, IDC_BUTTON9), FALSE);
 			}
 		}
