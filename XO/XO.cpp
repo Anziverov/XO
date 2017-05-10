@@ -1,0 +1,390 @@
+// XO.cpp : Defines the entry point for the application.
+// left side opposite message of winner 
+
+#include "stdafx.h"
+#include "XO.h"
+#include "windowsx.h"
+
+#define MAX_LOADSTRING 100
+#define BUTTONS IDC_BUTTON1 || IDC_BUTTON2 || IDC_BUTTON3 || IDC_BUTTON4 || IDC_BUTTON5 || IDC_BUTTON6 || IDC_BUTTON7 || IDC_BUTTON8 || IDC_BUTTON9
+
+// Global Variables:
+class Turn {
+private:
+	LPCWSTR STATE = L"N"; // N - none, x - x player, O - o player
+	//wchar_t* bf;
+public: 
+	LPCWSTR makemove() 
+	{
+		
+		if (STATE == L"N") { 
+			STATE = L"X";
+			return STATE; }
+		if (STATE == L"X") { 
+			STATE = L"O";
+			return STATE; }
+		if (STATE == L"O") { 
+			STATE = L"X";
+			return STATE; }
+	}
+	LPCWSTR getSTATE() {
+		return STATE;
+	}
+	void resetGame()
+	{
+		STATE = L"N";
+	}
+
+};
+class Field {
+private:
+	//LPWSTR FIELD[3][3];
+	char FIELD[3][3];
+	int freeFields = 9;
+	LPCWSTR x_won = L"X's won!";
+	LPCWSTR o_won = L"O's won!";
+	LPCWSTR n_won = L"DRAW"; // in progress
+public:
+	void move(LPCWSTR sign,int x, int y) {
+		if (sign == L"X")
+			FIELD[x][y] = 'X';
+		if (sign == L"O")
+			FIELD[x][y] = 'O';
+		--freeFields;
+	}
+	LPCWSTR winState() {
+		if ((FIELD[0][0] == 'X' || FIELD[0][0] == 'O') && (FIELD[0][0] == FIELD[1][0] && FIELD[1][0] == FIELD[2][0]) ) {
+			if (FIELD[0][0] == 'X')
+				return x_won;
+			if (FIELD[0][0] == 'O')
+				return o_won;
+		}
+		if ((FIELD[0][1] == 'X' || FIELD[0][1] == 'O') && (FIELD[0][1] == FIELD[1][1] && FIELD[1][1] == FIELD[2][1])) {
+			if (FIELD[0][1] == 'X')
+				return x_won;
+			if (FIELD[0][1] == 'O')
+				return o_won;
+		}
+		if ((FIELD[0][2] == 'X' || FIELD[0][2] == 'O') && (FIELD[0][2] == FIELD[1][2] && FIELD[1][2] == FIELD[2][2])) {
+			if (FIELD[0][2] == 'X')
+				return x_won;
+			if (FIELD[0][2] == 'O')
+				return o_won;
+		}
+		if ((FIELD[0][0] == 'X' || FIELD[0][0] == 'O') && (FIELD[0][0] == FIELD[0][1] && FIELD[0][1] == FIELD[0][2])) {
+			if (FIELD[0][0] == 'X')
+				return x_won;
+			if (FIELD[0][0] == 'O')
+				return o_won;
+		}
+		if ((FIELD[1][0] == 'X' || FIELD[1][0] == 'O') && (FIELD[1][0] == FIELD[1][1] && FIELD[1][1] == FIELD[1][2])) {
+			if (FIELD[1][0] == 'X')
+				return x_won;
+			if (FIELD[1][0] == 'O')
+				return o_won;
+		}
+		if ((FIELD[2][0] == 'X' || FIELD[2][0] == 'O') && (FIELD[2][0] == FIELD[2][1] && FIELD[2][1] == FIELD[2][2])) {
+			if (FIELD[0][0] == 'X')
+				return x_won;
+			if (FIELD[0][0] == 'O')
+				return o_won;
+		}
+		if ((FIELD[0][0] == 'X' || FIELD[0][0] == 'O') && (FIELD[0][0] == FIELD[1][1] && FIELD[1][1] == FIELD[2][2])) {
+			if (FIELD[0][0] == 'X')
+				return x_won;
+			if (FIELD[0][0] == 'O')
+				return o_won;
+		}
+		if ((FIELD[0][2] == 'X' || FIELD[0][2] == 'O') && (FIELD[0][2] == FIELD[1][1] && FIELD[1][1] == FIELD[2][0])) {
+			if (FIELD[0][2] == 'X')
+				return x_won;
+			if (FIELD[0][2] == 'O')
+				return o_won;
+		}
+		if (freeFields == 0) return n_won;
+		return NULL;
+	}
+	void reset() {
+		freeFields = 9;
+		for (int i = 0; i < 3; ++i)
+			for (int j = 0; j < 3; ++j)
+				FIELD[i][j] = '\0';
+	}
+};
+
+
+HINSTANCE hInst;                                // current instance
+WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
+WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
+Turn TGame;
+Field GameField;
+LPWSTR sign_f;
+LPTSTR s;
+
+// Forward declarations of functions included in this code module:
+ATOM                MyRegisterClass(HINSTANCE hInstance);
+BOOL                InitInstance(HINSTANCE, int);
+LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
+INT_PTR CALLBACK	XO(HWND, UINT, WPARAM, LPARAM);
+
+
+int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
+                     _In_opt_ HINSTANCE hPrevInstance,
+                     _In_ LPWSTR    lpCmdLine,
+                     _In_ int       nCmdShow)
+{
+    UNREFERENCED_PARAMETER(hPrevInstance);
+    UNREFERENCED_PARAMETER(lpCmdLine);
+
+    // TODO: Place code here.
+
+    // Initialize global strings
+    LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
+    LoadStringW(hInstance, IDC_XO, szWindowClass, MAX_LOADSTRING);
+    MyRegisterClass(hInstance);
+
+    // Perform application initialization:
+    if (!InitInstance (hInstance, nCmdShow))
+    {
+        return FALSE;
+    }
+
+    HACCEL hAccelTable = LoadAccelerators(hInstance, MAKEINTRESOURCE(IDC_XO));
+
+    MSG msg;
+
+    // Main message loop:
+    while (GetMessage(&msg, nullptr, 0, 0))
+    {
+        if (!TranslateAccelerator(msg.hwnd, hAccelTable, &msg))
+        {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+        }
+    }
+
+    return (int) msg.wParam;
+}
+
+
+
+//
+//  FUNCTION: MyRegisterClass()
+//
+//  PURPOSE: Registers the window class.
+//
+ATOM MyRegisterClass(HINSTANCE hInstance)
+{
+    WNDCLASSEXW wcex;
+
+    wcex.cbSize = sizeof(WNDCLASSEX);
+
+    wcex.style          = CS_HREDRAW | CS_VREDRAW;
+    wcex.lpfnWndProc    = WndProc;
+    wcex.cbClsExtra     = 0;
+    wcex.cbWndExtra     = 0;
+    wcex.hInstance      = hInstance;
+    wcex.hIcon          = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_XO));
+    wcex.hCursor        = LoadCursor(nullptr, IDC_ARROW);
+    wcex.hbrBackground  = (HBRUSH)(COLOR_WINDOW+1);
+    wcex.lpszMenuName   = MAKEINTRESOURCEW(IDC_XO);
+    wcex.lpszClassName  = szWindowClass;
+    wcex.hIconSm        = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+
+    return RegisterClassExW(&wcex);
+}
+
+//
+//   FUNCTION: InitInstance(HINSTANCE, int)
+//
+//   PURPOSE: Saves instance handle and creates main window
+//
+//   COMMENTS:
+//
+//        In this function, we save the instance handle in a global variable and
+//        create and display the main program window.
+//
+BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
+{
+   hInst = hInstance; // Store instance handle in our global variable
+
+   HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW,
+      CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, nullptr, nullptr, hInstance, nullptr);
+
+   if (!hWnd)
+   {
+      return FALSE;
+   }
+
+   ShowWindow(hWnd, nCmdShow);
+   UpdateWindow(hWnd);
+
+   return TRUE;
+}
+
+//
+//  FUNCTION: WndProc(HWND, UINT, WPARAM, LPARAM)
+//
+//  PURPOSE:  Processes messages for the main window.
+//
+//  WM_COMMAND  - process the application menu
+//  WM_PAINT    - Paint the main window
+//  WM_DESTROY  - post a quit message and return
+//
+//
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    switch (message)
+    {
+    case WM_COMMAND:
+        {
+            int wmId = LOWORD(wParam);
+            // Parse the menu selections:
+            switch (wmId)
+            {
+			case ID_FILE_STARTGAME:
+				DialogBox(hInst, MAKEINTRESOURCE(IDD_XO), hWnd, XO);
+				break;
+			case IDM_ABOUT:
+                DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
+                break;
+            case IDM_EXIT:
+
+                DestroyWindow(hWnd);
+                break;
+            default:
+                return DefWindowProc(hWnd, message, wParam, lParam);
+            }
+        }
+        break;
+    case WM_PAINT:
+        {
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(hWnd, &ps);
+            // TODO: Add any drawing code that uses hdc here...
+            EndPaint(hWnd, &ps);
+        }
+        break;
+    case WM_DESTROY:
+        PostQuitMessage(0);
+        break;
+    default:
+        return DefWindowProc(hWnd, message, wParam, lParam);
+    }
+    return 0;
+}
+
+// Message handler for about box.
+
+
+
+
+INT_PTR CALLBACK XO(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	UNREFERENCED_PARAMETER(lParam);
+	switch (message)
+	{
+	case WM_INITDIALOG:
+		return (INT_PTR)TRUE;
+	
+	case WM_COMMAND:
+		if (LOWORD(wParam) == IDCANCEL)
+		{
+
+			TGame.resetGame();
+			GameField.reset();
+			EndDialog(hDlg, LOWORD(wParam));
+			return (INT_PTR)TRUE;
+		}
+		if (LOWORD(wParam) == BUTTONS)
+		{
+			if (LOWORD(wParam) == IDC_BUTTON1)
+			{
+			
+				SetWindowText((HWND)lParam, TGame.makemove());
+				GameField.move(TGame.getSTATE(), 0, 0);
+				if (GameField.winState() != NULL) MessageBox(hDlg, GameField.winState(), L"HEADER", MB_OK); // throwing null, game.maybe move is broken
+				Button_Enable(GetDlgItem(hDlg, IDC_BUTTON1), FALSE); // to   disable pressing again
+			}
+			if (LOWORD(wParam) == IDC_BUTTON2)
+			{
+				SetWindowText((HWND)lParam, TGame.makemove());
+				GameField.move(TGame.getSTATE(), 1, 0);
+				if (GameField.winState() != NULL) MessageBox(hDlg, GameField.winState(), L"HEADER", MB_OK);
+				//MessageBox(hDlg, TGame.getSTATE(), L"HEADER", MB_OK);
+				Button_Enable(GetDlgItem(hDlg, IDC_BUTTON2), FALSE);
+			}
+			if (LOWORD(wParam) == IDC_BUTTON3)
+			{
+				SetWindowText((HWND)lParam, TGame.makemove());
+				GameField.move(TGame.getSTATE(), 2, 0);
+				if (GameField.winState() != NULL) MessageBox(hDlg, GameField.winState(), L"HEADER", MB_OK);
+				Button_Enable(GetDlgItem(hDlg, IDC_BUTTON3), FALSE);
+			}
+			if (LOWORD(wParam) == IDC_BUTTON4)
+			{
+				SetWindowText((HWND)lParam, TGame.makemove());
+				GameField.move(TGame.getSTATE(), 0, 1);
+				if (GameField.winState() != NULL) MessageBox(hDlg, GameField.winState(), L"HEADER", MB_OK);
+				Button_Enable(GetDlgItem(hDlg, IDC_BUTTON4), FALSE);
+			}
+			if (LOWORD(wParam) == IDC_BUTTON5)
+			{
+				SetWindowText((HWND)lParam, TGame.makemove());
+				GameField.move(TGame.getSTATE(), 1, 1);
+				if (GameField.winState() != NULL) MessageBox(hDlg, GameField.winState(), L"HEADER", MB_OK);
+				Button_Enable(GetDlgItem(hDlg, IDC_BUTTON5), FALSE);
+			}
+			if (LOWORD(wParam) == IDC_BUTTON6)
+			{
+				SetWindowText((HWND)lParam, TGame.makemove());
+				GameField.move(TGame.getSTATE(), 2, 1);
+				if (GameField.winState() != NULL) MessageBox(hDlg, GameField.winState(), L"HEADER", MB_OK);
+				Button_Enable(GetDlgItem(hDlg, IDC_BUTTON6), FALSE);
+			}
+			if (LOWORD(wParam) == IDC_BUTTON7)
+			{
+				SetWindowText((HWND)lParam, TGame.makemove());
+				GameField.move(TGame.getSTATE(), 0, 2);
+				if (GameField.winState() != NULL) MessageBox(hDlg, GameField.winState(), L"HEADER", MB_OK);
+				Button_Enable(GetDlgItem(hDlg, IDC_BUTTON7), FALSE);
+			}
+			if (LOWORD(wParam) == IDC_BUTTON8)
+			{
+				SetWindowText((HWND)lParam, TGame.makemove());
+				GameField.move(TGame.getSTATE(), 1, 2);
+				if (GameField.winState() != NULL) MessageBox(hDlg, GameField.winState(), L"HEADER", MB_OK);
+				Button_Enable(GetDlgItem(hDlg, IDC_BUTTON8), FALSE);
+			}
+			if (LOWORD(wParam) == IDC_BUTTON9)
+			{
+				SetWindowText((HWND)lParam, TGame.makemove());
+				GameField.move(TGame.getSTATE(), 2, 2);
+				if (GameField.winState() != NULL) MessageBox(hDlg, GameField.winState(), L"HEADER", MB_OK);
+				Button_Enable(GetDlgItem(hDlg, IDC_BUTTON9), FALSE);
+			}
+		}
+		break;
+	}
+	return (INT_PTR)FALSE;
+}
+
+INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    UNREFERENCED_PARAMETER(lParam);
+    switch (message)
+    {
+    case WM_INITDIALOG:
+        return (INT_PTR)TRUE;
+
+    case WM_COMMAND:
+        if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
+        {
+            EndDialog(hDlg, LOWORD(wParam));
+            return (INT_PTR)TRUE;
+        }
+        break;
+    }
+    return (INT_PTR)FALSE;
+}
